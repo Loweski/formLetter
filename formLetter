@@ -1,0 +1,46 @@
+package main
+
+import (
+	"log"
+	"os"
+	"text/template"
+)
+
+func main() {
+	// Define a template.
+	var newevents = []string{"Adopt a Stray-May 17", "Feed the Homeless-May 25", "Relay for Life-April 7"}
+	const letter = `
+Dear {{.Honorific}}{{.Name}},
+{{if .Attended}}
+Thank for attending the fundraiser.{{else}}
+It is a shame you couldn't make it to the fundraiser.{{end}}
+{{with .Donation}}I like to personally thank you for the donation.
+{{end}}
+Here is a list of our upcoming events:
+{{range .newevents}}
+	{{.}}
+{{end}}
+`
+	// Prepare some data to insert into the template.
+	type Recipient struct {
+		Honorific, Name    string
+		Donation, Attended bool
+	}
+	var recipients = []Recipient{
+		{"Mrs.", "Mildred", true, true},
+		{"Mr.", "John", true, false},
+		{"Mr.", "No", false, false},
+	}
+
+	// STEP 1 & STEP 2
+	// Create a new template and parse the letter into it.
+	t := template.Must(template.New("letter").Parse(letter))
+	//STEP 3
+	// Execute the template for each recipient.
+	for _, r := range recipients {
+		err := t.Execute(os.Stdout, r)
+		if err != nil {
+			log.Println("executing template:", err)
+		}
+	}
+}
